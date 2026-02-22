@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rental Projection Tool - Evergreen Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Julius+Sans+One&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --olive:#3d3b2e; --olive-mid:#5a5640; --olive-lt:#8a8668;
+  --tan:#c8bfa8; --tan-light:#e8e2d8; --tan-wash:#f5f2ec;
+  --teal:#5ba3b0; --white:#ffffff;
+  --text:#1e1d18; --text-mid:#4a4840; --text-muted:#8a8676;
+  --border:#d8d2c6; --red:#b34040; --green:#3d7a52;
+  --furn:#7a5c3d; --furn-light:#f5ede3;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;background:var(--tan-wash);color:var(--text);}
+h1,h2,h3{font-family:'Julius Sans One',sans-serif;}
+
+/* FORM */
+.form-wrap{background:var(--white);border-bottom:2px solid var(--border);padding:2rem;}
+.form-inner{max-width:900px;margin:0 auto;}
+.logo-row{display:flex;align-items:center;gap:16px;margin-bottom:1.75rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);}
+.logo-row img{height:58px;}
+.brand-name{font-family:'Julius Sans One',sans-serif;font-size:1.4rem;letter-spacing:.12em;color:var(--olive);}
+.brand-tag{font-size:.7rem;color:var(--text-muted);letter-spacing:.15em;text-transform:uppercase;font-weight:500;margin-top:3px;}
+.fsec{font-family:'Julius Sans One',sans-serif;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--olive-lt);margin:1.2rem 0 .6rem;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.lbl{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mid);}
+.iw{position:relative;display:flex;align-items:center;}
+.pfx,.sfx{position:absolute;color:var(--text-muted);font-size:.84rem;font-weight:500;pointer-events:none;}
+.pfx{left:10px;}.sfx{right:10px;}
+input[type=text],input[type=number],select{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:9px 11px;font-family:'Montserrat',sans-serif;font-size:.88rem;color:var(--text);background:var(--white);-webkit-appearance:none;appearance:none;}
+input:focus,select:focus{outline:none;border-color:var(--olive-mid);box-shadow:0 0 0 3px rgba(90,86,64,.1);}
+.has-pfx input{padding-left:24px;}.has-sfx input{padding-right:28px;}
+input.autofilled{background:#f0f5f1;border-color:#b8dfc5;}
+.addr-row{display:flex;gap:8px;}.addr-row input{flex:1;}
+.btn-lookup{padding:0 16px;background:var(--olive);color:white;border:none;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.06em;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.btn-lookup:hover{background:var(--olive-mid);}
+.lspin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.btn-lookup.loading .lspin{display:block;}.btn-lookup.loading .ltxt{display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.lookup-msg{display:none;font-size:.72rem;padding:6px 10px;border-radius:5px;margin-top:6px;}
+.lookup-msg.ok{background:#e8f5ec;color:var(--green);border:1px solid #b8dfc5;display:block;}
+.lookup-msg.err{background:#fdf0e8;color:var(--furn);border:1px solid #e8cdb0;display:block;}
+.lookup-msg.info{background:var(--tan-wash);color:var(--text-muted);border:1px solid var(--border);display:block;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;}
+@media(max-width:680px){.g3,.g4,.g5{grid-template-columns:1fr 1fr;}}
+@media(max-width:420px){.g2,.g3,.g4,.g5{grid-template-columns:1fr;}}
+.slider-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.sval{min-width:44px;text-align:right;font-weight:600;font-size:.85rem;color:var(--olive);}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:var(--border);cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--olive-mid);border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.furn-row{display:flex;align-items:center;gap:12px;background:var(--furn-light);border:1.5px solid #d4b896;border-radius:8px;padding:12px 16px;margin-top:.75rem;}
+.furn-icon{font-size:1.3rem;}.furn-text{flex:1;}
+.furn-label{font-family:'Julius Sans One',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--furn);display:block;margin-bottom:2px;}
+.furn-sub{font-size:.7rem;color:#9a7a5a;}
+.tog-furn{width:42px;height:22px;background:var(--border);border-radius:11px;position:relative;border:none;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog-furn.on{background:var(--furn);}
+.tog-furn::after{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tog-furn.on::after{transform:translateX(20px);}
+.furn-note{display:none;margin-top:6px;font-size:.72rem;font-weight:600;color:var(--furn);background:rgba(122,92,61,.08);border-radius:4px;padding:4px 8px;text-align:center;}
+.furn-note.show{display:block;}
+.opt-sec{border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-top:.5rem;}
+.opt-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--tan-wash);cursor:pointer;user-select:none;}
+.opt-lbl{font-family:'Julius Sans One',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mid);}
+.tog{width:36px;height:19px;background:var(--border);border-radius:10px;position:relative;border:none;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--olive-mid);}
+.tog::after{content:'';position:absolute;width:13px;height:13px;background:white;border-radius:50%;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tog.on::after{transform:translateX(17px);}
+.opt-body{display:none;padding:12px 14px;border-top:1px solid var(--border);background:white;}
+.btn-gen{width:100%;margin-top:1.5rem;padding:13px;background:var(--olive);color:white;border:none;border-radius:7px;font-family:'Julius Sans One',sans-serif;font-size:1rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-gen:hover{background:var(--olive-mid);}
+.btn-gen .gspin{width:17px;height:17px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.btn-gen.loading .gspin{display:block;}.btn-gen.loading .gtxt{display:none;}
+
+/* MODAL OVERLAY */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;overflow-y:auto;padding:20px;}
+.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+.modal-box{background:var(--tan-wash);border-radius:12px;width:100%;max-width:920px;margin:auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+
+/* MODAL ACTION BAR */
+.modal-bar{background:var(--olive);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:10;}
+.modal-bar-left{font-family:'Julius Sans One',sans-serif;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);}
+.modal-bar-right{display:flex;gap:8px;align-items:center;}
+.btn-action{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;border:none;font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .2s;}
+.btn-pdf{background:white;color:var(--olive);}
+.btn-pdf:hover{background:var(--tan-light);}
+.btn-share{background:var(--teal);color:white;}
+.btn-share:hover{background:#4a8f9b;}
+.btn-close{background:rgba(255,255,255,.15);color:white;border:none;border-radius:6px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;}
+.btn-close:hover{background:rgba(255,255,255,.25);}
+
+/* SHARE TOAST */
+.share-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--olive);color:white;padding:10px 20px;border-radius:8px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;z-index:2000;white-space:nowrap;}
+.share-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* PROPOSAL CONTENT */
+.proposal-content{padding:1.5rem;}
+.p-header{background:var(--olive);border-radius:10px 10px 0 0;padding:2rem 2.25rem 1.75rem;display:flex;align-items:flex-start;gap:2rem;color:white;}
+.p-logo{height:88px;filter:brightness(0) invert(1);opacity:.9;flex-shrink:0;}
+.p-addr{font-family:'Julius Sans One',sans-serif;font-size:2rem;line-height:1;letter-spacing:.06em;margin-bottom:10px;}
+.p-sub{font-family:'Julius Sans One',sans-serif;font-size:1.3rem;color:rgba(255,255,255,.82);}
+.furn-badge{display:none;margin-top:10px;background:rgba(201,168,116,.25);border:1px solid rgba(201,168,116,.5);color:rgba(255,255,255,.9);font-family:'Julius Sans One',sans-serif;font-size:.68rem;letter-spacing:.12em;padding:4px 12px;border-radius:100px;width:fit-content;}
+.furn-badge.show{display:block;}
+.demand-bar{background:var(--tan-light);border-left:4px solid var(--olive);padding:.9rem 1.5rem;font-family:'Julius Sans One',sans-serif;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--olive);}
+.proj-wrap{border:1.5px solid var(--border);border-top:none;}
+.proj-table{width:100%;border-collapse:collapse;}
+.proj-table thead tr{background:var(--olive);color:white;}
+.proj-table thead th{padding:11px 16px;text-align:left;font-family:'Julius Sans One',sans-serif;font-size:.7rem;letter-spacing:.08em;font-weight:400;}
+.proj-table tbody tr{border-bottom:1px solid var(--border);}
+.proj-table tbody tr:last-child{border-bottom:none;}
+.proj-table tbody td{padding:13px 16px;font-size:.95rem;background:white;}
+.proj-table tbody td:first-child{font-family:'Julius Sans One',sans-serif;font-weight:400;letter-spacing:.06em;font-size:.8rem;}
+.proj-table tbody td:last-child{font-weight:800;color:var(--olive);font-size:1rem;}
+.furn-tr td{background:var(--furn-light) !important;}
+.furn-tr td:first-child{color:var(--furn);}
+.furn-tr td:last-child{color:var(--furn) !important;}
+.expense-strip{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;background:white;}
+.ex-item{flex:1;padding:12px 10px;border-right:1px solid var(--border);text-align:center;}
+.ex-item:last-child{border-right:none;}
+.ex-lbl{font-family:'Julius Sans One',sans-serif;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;}
+.ex-val{font-size:1rem;font-weight:700;color:var(--red);}
+.ex-val.pos{color:var(--green);}
+.sec-head{padding:1.5rem 0 .5rem;font-family:'Julius Sans One',sans-serif;font-size:1.5rem;letter-spacing:.08em;color:var(--text);}
+.sec-sub{font-size:.78rem;color:var(--text-muted);margin-bottom:.85rem;}
+.chart-row{display:grid;grid-template-columns:280px 1fr;gap:1rem;align-items:start;background:white;border:1.5px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1rem;}
+@media(max-width:600px){.chart-row{grid-template-columns:1fr;}}
+.unit-box{background:var(--tan-wash);border:1.5px solid var(--border);border-radius:7px;padding:.9rem;}
+.unit-lbl{font-family:'Julius Sans One',sans-serif;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:4px;}
+.unit-addr{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.3;}
+.unit-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.us-lbl{font-family:'Julius Sans One',sans-serif;font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;}
+.us-val{font-size:.82rem;font-weight:600;}
+.rent-badge{display:inline-block;background:var(--teal);color:white;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:4px;margin-top:10px;font-family:'Julius Sans One',sans-serif;letter-spacing:.06em;}
+.furn-tag{display:none;margin-left:6px;background:var(--furn);color:white;font-size:.62rem;font-family:'Julius Sans One',sans-serif;letter-spacing:.08em;padding:3px 8px;border-radius:4px;}
+.furn-tag.show{display:inline-block;}
+.chart-title{font-family:'Julius Sans One',sans-serif;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.bars{display:flex;align-items:flex-end;gap:4px;height:100px;border-bottom:1.5px solid var(--border);position:relative;}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;}
+.bar-rect{width:100%;border-radius:2px 2px 0 0;min-height:3px;}
+.bar-rect.yours{background:var(--teal);}
+.bar-rect.furn-bar{background:var(--furn);}
+.bar-rect.active{background:var(--tan);}
+.bar-rect.empty{background:var(--tan-light);opacity:.4;}
+.bar-lbls{display:flex;gap:4px;margin-top:3px;}
+.bar-lbl{flex:1;text-align:center;font-size:.53rem;color:var(--text-muted);}
+.bar-axis{display:flex;justify-content:space-between;margin-top:6px;font-size:.62rem;color:var(--text-muted);}
+.median-tag{position:absolute;top:4px;right:4px;background:white;border:1.5px solid var(--border);border-radius:5px;padding:4px 9px;font-size:.65rem;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;}
+.median-tag .ml{color:var(--text-muted);font-size:.58rem;font-family:'Julius Sans One',sans-serif;letter-spacing:.08em;}
+.median-tag .mv{font-weight:700;}
+.comps-tbl{width:100%;border-collapse:collapse;}
+.comps-tbl thead tr{background:var(--tan-light);}
+.comps-tbl thead th{padding:9px 12px;text-align:left;font-family:'Julius Sans One',sans-serif;font-size:.66rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mid);}
+.comps-tbl tbody tr{border-bottom:1px solid var(--tan-light);}
+.comps-tbl tbody tr:last-child{border-bottom:none;}
+.comps-tbl tbody td{padding:10px 12px;font-size:.84rem;background:white;}
+.sim{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.72rem;font-weight:700;color:white;background:var(--teal);}
+.sim.med{background:#8a9e5a;}
+.up{color:var(--green);font-weight:600;font-size:.76rem;}
+.dn{color:var(--red);font-weight:600;font-size:.76rem;}
+.svc-block{background:white;border:1.5px solid var(--border);border-radius:8px;padding:1.5rem 1.75rem;margin-bottom:1rem;}
+.svc-title{font-family:'Julius Sans One',sans-serif;font-size:1.45rem;letter-spacing:.06em;color:var(--text);margin-bottom:.75rem;}
+.svc-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.svc-list li{display:flex;align-items:flex-start;gap:8px;font-size:.87rem;color:var(--text-mid);line-height:1.5;}
+.svc-list li::before{content:'•';color:var(--olive);font-size:1.1rem;line-height:1.2;flex-shrink:0;}
+.nc-block{background:var(--tan-wash);border:1.5px solid var(--border);border-radius:8px;padding:1.5rem 1.75rem;margin-bottom:1.5rem;}
+.nc-title{font-family:'Julius Sans One',sans-serif;font-size:1.45rem;letter-spacing:.06em;color:var(--text);margin-bottom:.75rem;}
+.nc-list{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.nc-list li{font-size:.87rem;color:var(--text-mid);line-height:1.5;}
+.nc-list li strong{color:var(--olive);text-decoration:underline;}
+.p-footer{background:var(--olive);border-radius:0 0 10px 10px;padding:1.5rem 2rem;color:rgba(255,255,255,.9);text-align:center;}
+.p-footer .url{font-family:'Julius Sans One',sans-serif;font-size:1.3rem;letter-spacing:.1em;text-transform:uppercase;color:white;margin-bottom:8px;}
+.p-footer .contact{display:flex;justify-content:space-between;font-size:.75rem;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.2);padding-top:10px;margin-top:8px;gap:1rem;flex-wrap:wrap;}
+
+/* PRINT STYLES */
+@media print {
+  .modal-overlay,.modal-bar,.btn-action,.btn-close,.share-toast,.form-wrap{display:none !important;}
+  .modal-box{box-shadow:none;border-radius:0;}
+  .proposal-content{padding:0;}
+  body{background:white;}
+}
+</style>
+</head>
+<body>
+
+<!-- FORM -->
+<div class="form-wrap">
+<div class="form-inner">
+
+  <div class="logo-row">
+    <img src="https://static.wixstatic.com/media/eecbc0_9b5f129898d74238a3de148072c6e028~mv2.png/v1/fill/w_43,h_58,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/eecbc0_9b5f129898d74238a3de148072c6e028~mv2.png" alt="Evergreen" onerror="this.style.display='none'">
+    <div>
+      <div class="brand-name">Evergreen Management</div>
+      <div class="brand-tag">Rental Projection &amp; Proposal Generator</div>
+    </div>
+  </div>
+
+  <div class="fsec">Rentcast API Key</div>
+  <div class="fg" style="margin-bottom:.5rem;">
+    <label class="lbl">Your Rentcast API key — saved in browser, never shared</label>
+    <div style="display:flex;gap:8px;">
+      <input type="password" id="inp-apikey" placeholder="Paste your Rentcast API key here" style="flex:1;" oninput="saveKey();">
+      <button type="button" onclick="toggleKeyVis();" style="padding:0 12px;background:var(--tan-light);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:.8rem;color:var(--text-mid);white-space:nowrap;" id="btn-showkey">Show</button>
+    </div>
+    <div id="key-msg" class="lookup-msg" style="display:none;"></div>
+  </div>
+
+  <div class="fsec">Property Address</div>
+  <div class="fg">
+    <label class="lbl">Start typing — select an address to auto-populate property details</label>
+    <div style="position:relative;">
+      <input type="text" id="inp-address" placeholder="e.g. 1422 E Franklin St, Boise, ID" autocomplete="off" oninput="onAddrInput();" onkeydown="onAddrKey(event);">
+      <div id="addr-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--olive-mid);border-top:none;border-radius:0 0 7px 7px;z-index:500;box-shadow:0 6px 20px rgba(0,0,0,.12);max-height:240px;overflow-y:auto;"></div>
+    </div>
+    <div class="lookup-msg" id="lookup-msg"></div>
+  </div>
+
+  <div class="fsec">Property Details</div>
+  <div class="g5">
+    <div class="fg">
+      <label class="lbl">Bedrooms</label>
+      <select id="inp-beds">
+        <option value="1">1 Bed</option>
+        <option value="2">2 Beds</option>
+        <option value="3" selected>3 Beds</option>
+        <option value="4">4 Beds</option>
+        <option value="5">5+ Beds</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="lbl">Bathrooms</label>
+      <select id="inp-baths">
+        <option value="1">1</option>
+        <option value="1.5">1.5</option>
+        <option value="2" selected>2</option>
+        <option value="2.5">2.5</option>
+        <option value="3">3</option>
+        <option value="4">4+</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="lbl">Sq. Footage</label>
+      <div class="iw has-sfx">
+        <input type="number" id="inp-sqft" placeholder="Auto">
+        <span class="sfx">ft2</span>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="lbl">Property Type</label>
+      <select id="inp-type">
+        <option value="sfh">Single Family</option>
+        <option value="townhome">Townhome</option>
+        <option value="condo">Condo</option>
+        <option value="duplex">Duplex</option>
+        <option value="multi">Multi-Unit</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="lbl">Management Fee</label>
+      <div class="slider-row">
+        <input type="range" id="inp-mgmt" min="6" max="15" value="10" step="0.5" oninput="document.getElementById('mgmt-val').textContent=this.value+'%';">
+        <span class="sval" id="mgmt-val">10%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="furn-row">
+    <div class="furn-icon">&#128681;</div>
+    <div class="furn-text">
+      <span class="furn-label">Furnished Rental</span>
+      <span class="furn-sub">Furnished properties typically command a 15-25% premium over unfurnished market rate.</span>
+    </div>
+    <button class="tog-furn" id="tog-furn" onclick="toggleFurn();"></button>
+  </div>
+  <div class="furn-note" id="furn-note">+20% furnished premium applied to rent projections</div>
+
+  <div class="fsec">Optional Expenses</div>
+
+  <div class="opt-sec">
+    <div class="opt-hdr" onclick="togOpt('mort');">
+      <span class="opt-lbl">Mortgage</span>
+      <button class="tog" id="tog-mort" onclick="event.stopPropagation();togOpt('mort');"></button>
+    </div>
+    <div class="opt-body" id="ob-mort">
+      <div class="g4">
+        <div class="fg"><label class="lbl">Purchase Price</label><div class="iw has-pfx"><span class="pfx">$</span><input type="number" id="inp-pprice" placeholder="350000"></div></div>
+        <div class="fg"><label class="lbl">Down Payment</label><div class="iw has-sfx"><input type="number" id="inp-down" placeholder="20"><span class="sfx">%</span></div></div>
+        <div class="fg"><label class="lbl">Interest Rate</label><div class="iw has-sfx"><input type="number" id="inp-rate" placeholder="7.0" step="0.1"><span class="sfx">%</span></div></div>
+        <div class="fg"><label class="lbl">Loan Term</label><select id="inp-term"><option value="30" selected>30 yr</option><option value="20">20 yr</option><option value="15">15 yr</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt-sec">
+    <div class="opt-hdr" onclick="togOpt('tax');">
+      <span class="opt-lbl">Property Taxes</span>
+      <button class="tog" id="tog-tax" onclick="event.stopPropagation();togOpt('tax');"></button>
+    </div>
+    <div class="opt-body" id="ob-tax">
+      <div class="g3">
+        <div class="fg"><label class="lbl">Annual Property Tax</label><div class="iw has-pfx"><span class="pfx">$</span><input type="number" id="inp-tax" placeholder="3500" oninput="showMo('inp-tax','tax-mo');"></div></div>
+        <div class="fg"><label class="lbl">&nbsp;</label><div style="background:var(--tan-wash);border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;font-size:.82rem;color:var(--text-muted);">approx <strong id="tax-mo" style="color:var(--olive)">$0</strong> / month</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt-sec">
+    <div class="opt-hdr" onclick="togOpt('ins');">
+      <span class="opt-lbl">Insurance</span>
+      <button class="tog" id="tog-ins" onclick="event.stopPropagation();togOpt('ins');"></button>
+    </div>
+    <div class="opt-body" id="ob-ins">
+      <div class="g3">
+        <div class="fg"><label class="lbl">Annual Insurance Premium</label><div class="iw has-pfx"><span class="pfx">$</span><input type="number" id="inp-ins" placeholder="1200" oninput="showMo('inp-ins','ins-mo');"></div></div>
+        <div class="fg"><label class="lbl">&nbsp;</label><div style="background:var(--tan-wash);border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;font-size:.82rem;color:var(--text-muted);">approx <strong id="ins-mo" style="color:var(--olive)">$0</strong> / month</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt-sec">
+    <div class="opt-hdr" onclick="togOpt('hoa');">
+      <span class="opt-lbl">HOA Fees</span>
+      <button class="tog" id="tog-hoa" onclick="event.stopPropagation();togOpt('hoa');"></button>
+    </div>
+    <div class="opt-body" id="ob-hoa">
+      <div class="g3">
+        <div class="fg"><label class="lbl">HOA Amount</label><div class="iw has-pfx"><span class="pfx">$</span><input type="number" id="inp-hoa" placeholder="200"></div></div>
+        <div class="fg"><label class="lbl">Billed</label><select id="inp-hoafreq"><option value="12">Monthly</option><option value="4">Quarterly</option><option value="1">Annually</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-gen" id="btn-gen" onclick="generateProposal();">
+    <span class="gtxt">Generate Rental Proposal</span>
+    <div class="gspin"></div>
+  </button>
+
+</div>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event);">
+  <div class="modal-box" onclick="event.stopPropagation();">
+
+    <!-- ACTION BAR -->
+    <div class="modal-bar">
+      <div class="modal-bar-left">Rental Proposal - Evergreen Management</div>
+      <div class="modal-bar-right">
+        <button class="btn-action btn-pdf" onclick="downloadPDF();">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+        <button class="btn-action btn-share" onclick="shareProposal();">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Link
+        </button>
+        <button class="btn-close" onclick="closeModal(null);">X Close</button>
+      </div>
+    </div>
+
+    <!-- PROPOSAL CONTENT -->
+    <div class="proposal-content" id="proposal-content">
+
+      <div class="p-header">
+        <img class="p-logo" src="https://static.wixstatic.com/media/eecbc0_9b5f129898d74238a3de148072c6e028~mv2.png/v1/fill/w_43,h_58,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/eecbc0_9b5f129898d74238a3de148072c6e028~mv2.png" alt="Evergreen" onerror="this.style.display='none'">
+        <div>
+          <div class="p-addr" id="out-addr"></div>
+          <div class="p-sub">Rental Projection &amp; Management Proposal</div>
+          <div class="furn-badge" id="out-furn-badge">Furnished Rental</div>
+        </div>
+      </div>
+
+      <div class="demand-bar" id="out-demand"></div>
+
+      <div class="proj-wrap">
+        <table class="proj-table">
+          <thead>
+            <tr>
+              <th>Rental Projection</th>
+              <th>Monthly Rent</th>
+              <th>Annual Gross</th>
+              <th id="out-mgmt-th">10% MGMT Fee</th>
+              <th>Net Total</th>
+            </tr>
+          </thead>
+          <tbody id="out-proj"></tbody>
+        </table>
+      </div>
+
+      <div id="out-expenses"></div>
+
+      <div class="sec-head">Comparable Rental Properties</div>
+      <div class="sec-sub" id="out-comp-sub"></div>
+
+      <div class="chart-row">
+        <div>
+          <div class="unit-box">
+            <div class="unit-lbl">Your Unit</div>
+            <div class="unit-addr" id="out-unit-addr"></div>
+            <div class="unit-stats">
+              <div><div class="us-lbl">Beds</div><div class="us-val" id="out-u-beds"></div></div>
+              <div><div class="us-lbl">Baths</div><div class="us-val" id="out-u-baths"></div></div>
+              <div><div class="us-lbl">Sq Ft</div><div class="us-val" id="out-u-sqft"></div></div>
+              <div><div class="us-lbl">Type</div><div class="us-val" id="out-u-type"></div></div>
+            </div>
+            <div style="margin-top:10px;">
+              <span class="rent-badge" id="out-u-rent"></span>
+              <span class="furn-tag" id="out-u-furn">Furnished</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="chart-title">Market Rent Distribution - Comparable Units</div>
+          <div class="bars" id="out-bars"></div>
+          <div class="bar-lbls" id="out-bar-lbls"></div>
+          <div class="bar-axis"><span id="out-axis-lo"></span><span>Number of Units</span><span id="out-axis-hi"></span></div>
+        </div>
+      </div>
+
+      <div style="border:1.5px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto;margin-bottom:1.5rem;">
+        <table class="comps-tbl">
+          <thead>
+            <tr>
+              <th>Similarity</th><th>Address</th><th>Beds</th><th>Baths</th>
+              <th>Sq Ft</th><th>Distance</th><th>Last Seen</th><th>Listed Rent</th>
+            </tr>
+          </thead>
+          <tbody id="out-comps"></tbody>
+        </table>
+      </div>
+
+      <div class="svc-block">
+        <div class="svc-title">Management Services</div>
+        <ul class="svc-list">
+          <li>Professional photography and listing syndication (Zillow, Apartments.com, Rentals.com)</li>
+          <li>Rigorous tenant screening including credit, background, and rental history checks</li>
+          <li>Move-in and move-out inspections with full photo documentation</li>
+          <li>Lease execution and enforcement</li>
+          <li>Legal compliance with Idaho landlord and tenant law</li>
+          <li>24/7 maintenance coordination with trusted local vendors</li>
+          <li>Monthly owner statements and year-end financial reporting</li>
+        </ul>
+      </div>
+
+      <div class="nc-block">
+        <div class="nc-title">We Don't Charge For...</div>
+        <ul class="nc-list">
+          <li><strong>Onboarding</strong> - No setup or onboarding fees when you bring your property to Evergreen.</li>
+          <li><strong>Professional Photos</strong> - We cover the cost of high-quality listing photos.</li>
+          <li><strong>Tenant Placement</strong> - No leasing or tenant placement fees, ever.</li>
+          <li><strong>Turnovers</strong> - No management fee during vacancy. We only make money when you do.</li>
+          <li><strong>Maintenance Coordination</strong> - No markup on vendor invoices.</li>
+        </ul>
+      </div>
+
+      <div class="p-footer">
+        <div class="url">www.evergreenmanagementcompany.com</div>
+        <div class="contact">
+          <span>(208) 477-1480</span>
+          <span>753 S Walnut St. Boise, ID 83712</span>
+          <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f59d9099999ab590839087928790909b98949b94929098909b81969a9885949b8cdb969a98">[email&#160;protected]</a></span>
+        </div>
+      </div>
+
+    </div><!-- end proposal-content -->
+  </div><!-- end modal-box -->
+</div><!-- end modal-overlay -->
+
+<!-- SHARE TOAST -->
+<div class="share-toast" id="share-toast">Link copied to clipboard!</div>
+
+<script>
+/* ============================================================
+   HELPERS
+============================================================ */
+function gid(id) { return document.getElementById(id); }
+function fmt(n) { return '$' + Math.round(Math.abs(n)).toLocaleString(); }
+
+function showMo(inId, outId) {
+  var v = parseFloat(gid(inId).value) || 0;
+  gid(outId).textContent = '$' + Math.round(v / 12).toLocaleString();
+}
+
+function togOpt(id) {
+  var btn = gid('tog-' + id);
+  var body = gid('ob-' + id);
+  var isOn = btn.classList.contains('on');
+  if (isOn) { btn.classList.remove('on'); body.style.display = 'none'; }
+  else { btn.classList.add('on'); body.style.display = 'block'; }
+}
+
+function toggleFurn() {
+  var btn = gid('tog-furn');
+  var note = gid('furn-note');
+  var isOn = btn.classList.contains('on');
+  if (isOn) { btn.classList.remove('on'); note.classList.remove('show'); }
+  else { btn.classList.add('on'); note.classList.add('show'); }
+}
+
+function calcMort(price, dp, rate, term) {
+  var P = price * (1 - dp / 100);
+  var r = rate / 100 / 12;
+  var n = term * 12;
+  if (r === 0) return P / n;
+  return P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+/* ============================================================
+   MODAL
+============================================================ */
+function openModal() {
+  gid('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e && e.target !== gid('modal-overlay')) return;
+  gid('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function downloadPDF() {
+  window.print();
+}
+
+function shareProposal() {
+  var url = window.location.href;
+  if (navigator.share) {
+    navigator.share({
+      title: 'Rental Proposal - Evergreen Management',
+      text: 'View your rental projection proposal from Evergreen Management.',
+      url: url
+    });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      var toast = gid('share-toast');
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 2800);
+    });
+  } else {
+    prompt('Copy this link to share:', url);
+  }
+}
+
+/* ============================================================
+   ADDRESS AUTOCOMPLETE + RENTCAST PROPERTY LOOKUP
+============================================================ */
+var detectedZip = '';
+var acTimer = null;
+var acResults = [];
+var acIndex = -1;
+
+function extractZip(str) {
+  var m = str.match(/\b(\d{5})(-\d{4})?\b/);
+  return m ? m[1] : null;
+}
+
+function setSelect(id, val) {
+  var sel = gid(id);
+  var num = parseFloat(val);
+  var best = 0, bestDiff = Infinity;
+  for (var i = 0; i < sel.options.length; i++) {
+    var d = Math.abs(parseFloat(sel.options[i].value) - num);
+    if (d < bestDiff) { best = i; bestDiff = d; }
+  }
+  sel.selectedIndex = best;
+}
+
+function onAddrInput() {
+  var val = gid('inp-address').value.trim();
+  detectedZip = '';
+  gid('lookup-msg').className = 'lookup-msg';
+  if (val.length < 4) { closeDropdown(); return; }
+  clearTimeout(acTimer);
+  acTimer = setTimeout(function() { fetchSuggestions(val); }, 320);
+}
+
+function onAddrKey(e) {
+  var dd = gid('addr-dropdown');
+  var items = dd.querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acIndex = Math.min(acIndex + 1, items.length - 1);
+    highlightItem(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acIndex = Math.max(acIndex - 1, 0);
+    highlightItem(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acIndex >= 0 && acResults[acIndex]) {
+      selectAddress(acResults[acIndex]);
+    }
+  } else if (e.key === 'Escape') {
+    closeDropdown();
+  }
+}
+
+function highlightItem(items) {
+  for (var i = 0; i < items.length; i++) {
+    items[i].style.background = i === acIndex ? 'var(--tan-light)' : '';
+  }
+}
+
+function fetchSuggestions(query) {
+  var url = 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query)
+    + '&format=json&addressdetails=1&limit=6&countrycodes=us'
+    + '&viewbox=-117.5,44.8,-114.0,42.5&bounded=0';
+  fetch(url, { headers: { 'Accept-Language': 'en-US' } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      // Filter to street-level results only
+      acResults = data.filter(function(d) {
+        return d.address && (d.address.house_number || d.address.road);
+      }).slice(0, 6);
+      renderDropdown(acResults);
+    })
+    .catch(function() { closeDropdown(); });
+}
+
+function renderDropdown(results) {
+  var dd = gid('addr-dropdown');
+  acIndex = -1;
+  if (!results.length) { closeDropdown(); return; }
+  var html = '';
+  for (var i = 0; i < results.length; i++) {
+    var r = results[i];
+    var ad = r.address || {};
+    var line1 = ((ad.house_number || '') + ' ' + (ad.road || '')).trim();
+    var city  = ad.city || ad.town || ad.village || '';
+    var state = ad.state_code || ad.state || '';
+    var zip   = ad.postcode || '';
+    var line2 = [city, state, zip].filter(Boolean).join(', ');
+    html += '<div class="ac-item" data-idx="' + i + '" onclick="selectAddress(acResults[' + i + ']);" onmouseover="acIndex=' + i + ';highlightItem(this.parentNode.querySelectorAll(\'.ac-item\'));"'
+      + ' style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--tan-light);font-size:.84rem;">'
+      + '<div style="font-weight:600;color:var(--text);">' + (line1 || r.display_name.split(',')[0]) + '</div>'
+      + '<div style="font-size:.72rem;color:var(--text-muted);margin-top:1px;">' + line2 + '</div>'
+      + '</div>';
+  }
+  dd.innerHTML = html;
+  dd.style.display = 'block';
+}
+
+function closeDropdown() {
+  gid('addr-dropdown').style.display = 'none';
+  acResults = [];
+  acIndex = -1;
+}
+
+function selectAddress(place) {
+  var ad = place.address || {};
+  var house = ad.house_number || '';
+  var road  = ad.road || '';
+  var city  = ad.city || ad.town || ad.village || 'Boise';
+  var state = ad.state_code || 'ID';
+  var zip   = ad.postcode || '';
+  var fullAddr = [house + ' ' + road, city, state + (zip ? ' ' + zip : '')].filter(function(s){return s.trim();}).join(', ');
+  gid('inp-address').value = fullAddr;
+  detectedZip = zip;
+  closeDropdown();
+  fetchRentcastProperty(fullAddr);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!gid('inp-address').contains(e.target) && !gid('addr-dropdown').contains(e.target)) {
+    closeDropdown();
+  }
+});
+
+function fetchRentcastProperty(address) {
+  showMsg('info', 'Fetching property details from Rentcast...');
+  var url = 'https://api.rentcast.io/v1/properties?address=' + encodeURIComponent(address) + '&limit=1';
+  fetch(url, { headers: rcHeaders() })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var props = Array.isArray(data) ? data : (data.properties || data.data || [data]);
+      var p = props[0];
+      if (!p) { showMsg('err', 'Property found but no details available. Please fill in manually.'); return; }
+
+      var beds  = p.bedrooms || p.beds;
+      var baths = p.bathrooms || p.baths;
+      var sqft  = p.squareFootage || p.sqft || p.livingArea;
+      var ptype = p.propertyType || p.type || '';
+
+      if (beds)  { setSelect('inp-beds', String(beds)); }
+      if (baths) { setSelect('inp-baths', String(baths)); }
+      if (sqft)  { gid('inp-sqft').value = Math.round(sqft); gid('inp-sqft').classList.add('autofilled'); }
+
+      // Map Rentcast property type to our dropdown
+      var typeMap = {
+        'Single Family':'sfh','SingleFamily':'sfh','single_family':'sfh',
+        'Townhouse':'townhome','Townhome':'townhome','townhouse':'townhome',
+        'Condo':'condo','Condominium':'condo','condo':'condo',
+        'Duplex':'duplex','duplex':'duplex',
+        'Apartment':'multi','Multi-Family':'multi','multi_family':'multi'
+      };
+      var mappedType = typeMap[ptype];
+      if (mappedType) setSelect('inp-type', mappedType);
+
+      var parts = [];
+      if (beds)  parts.push(beds + ' bed');
+      if (baths) parts.push(baths + ' bath');
+      if (sqft)  parts.push(Math.round(sqft).toLocaleString() + ' sqft');
+      showMsg('ok', 'Property details loaded from Rentcast' + (parts.length ? ': ' + parts.join(', ') : '') + '. Adjust if needed.');
+    })
+    .catch(function() {
+      // Fall back to ZIP-based estimate
+      var zip = detectedZip || extractZip(address) || '83702';
+      var NEIGHBORHOOD_EST = {
+        '83702':{beds:3,baths:2,sqft:1350,type:'sfh'},
+        '83703':{beds:3,baths:2,sqft:1280,type:'sfh'},
+        '83704':{beds:3,baths:2,sqft:1400,type:'sfh'},
+        '83705':{beds:2,baths:1,sqft:1050,type:'sfh'},
+        '83706':{beds:3,baths:2,sqft:1450,type:'sfh'},
+        '83709':{beds:3,baths:2,sqft:1500,type:'sfh'},
+        '83712':{beds:4,baths:3,sqft:1900,type:'sfh'},
+        '83642':{beds:3,baths:2,sqft:1600,type:'sfh'},
+        '83616':{beds:4,baths:3,sqft:2100,type:'sfh'},
+        '83686':{beds:3,baths:2,sqft:1450,type:'sfh'},
+        '83687':{beds:3,baths:2,sqft:1400,type:'sfh'}
+      };
+      var est = NEIGHBORHOOD_EST[zip] || NEIGHBORHOOD_EST['83702'];
+      setSelect('inp-beds', String(est.beds));
+      setSelect('inp-baths', String(est.baths));
+      gid('inp-sqft').value = est.sqft;
+      setSelect('inp-type', est.type);
+      showMsg('err', 'Could not load from Rentcast — estimated from ZIP ' + zip + '. Please verify.');
+    });
+}
+
+function showMsg(type, msg) {
+  var el = gid('lookup-msg');
+  el.className = 'lookup-msg ' + type;
+  el.textContent = msg;
+}
+
+/* ============================================================
+   API KEY MANAGEMENT
+============================================================ */
+function saveKey() {
+  var k = gid('inp-apikey').value.trim();
+  RENTCAST_KEY = k;
+  localStorage.setItem('rc_key', k);
+  var msg = gid('key-msg');
+  if (k) { msg.className = 'lookup-msg ok'; msg.textContent = 'API key saved in browser.'; msg.style.display = 'block'; }
+  else   { msg.style.display = 'none'; }
+}
+
+function toggleKeyVis() {
+  var inp = gid('inp-apikey');
+  var btn = gid('btn-showkey');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+  else { inp.type = 'password'; btn.textContent = 'Show'; }
+}
+
+// Load saved key on page load
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem('rc_key') || '';
+  if (saved) {
+    gid('inp-apikey').value = saved;
+    RENTCAST_KEY = saved;
+    var msg = gid('key-msg');
+    msg.className = 'lookup-msg ok';
+    msg.textContent = 'API key loaded from browser storage.';
+    msg.style.display = 'block';
+  }
+});
+
+/* ============================================================
+   RENTCAST API
+============================================================ */
+var RENTCAST_KEY = localStorage.getItem('rc_key') || '';
+var liveComps = [];
+var rentcastRent = 0;
+var rentcastLow  = 0;
+var rentcastHigh = 0;
+
+function rcHeaders() {
+  // Always read from input in case user updated it
+  var inp = gid('inp-apikey');
+  if (inp && inp.value.trim()) RENTCAST_KEY = inp.value.trim();
+  return { 'accept': 'application/json', 'X-Api-Key': RENTCAST_KEY };
+}
+
+function fetchRentcastData(address, beds, baths, sqft, propType, callback) {
+  gid('out-comps').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);font-size:.85rem;">Loading live market data from Rentcast...</td></tr>';
+
+  var enc = encodeURIComponent(address);
+
+  // Match Rentcast website exactly: address-only, let lookupSubjectAttributes pull beds/baths/sqft,
+  // maxRadius=2 (Rentcast default), daysOld=270, compCount=20
+  var estimateUrl = 'https://api.rentcast.io/v1/avm/rent/long-term'
+    + '?address=' + enc
+    + '&maxRadius=2'
+    + '&daysOld=270'
+    + '&compCount=20'
+    + '&lookupSubjectAttributes=true';
+
+  fetch(estimateUrl, { headers: rcHeaders() })
+    .then(function(r) {
+      if (!r.ok) {
+        return r.text().then(function(txt) {
+          console.error('Rentcast AVM error ' + r.status + ':', txt);
+          throw new Error('API ' + r.status);
+        });
+      }
+      return r.json();
+    })
+    .then(function(data) {
+      console.log('=== RENTCAST AVM RESPONSE ===', JSON.stringify(data, null, 2));
+
+      rentcastRent = data.rent || 0;
+      rentcastLow  = data.rentRangeLow  || (rentcastRent ? Math.round(rentcastRent * 0.95) : 0);
+      rentcastHigh = data.rentRangeHigh || (rentcastRent ? Math.round(rentcastRent * 1.05) : 0);
+
+      var compsRaw = data.comparables || [];
+      console.log('Comps:', compsRaw.length, 'found under comparables');
+
+      liveComps = compsRaw.map(function(l) {
+        var addrStr  = l.formattedAddress || l.address || '';
+        var addrLine = addrStr.split(',')[0] || 'Address on file';
+        var zip   = l.zipCode  || extractZip(addrStr) || '';
+        var city  = l.city     || 'Boise';
+        var state = l.state    || 'ID';
+        var rawDate = l.lastSeenDate || l.listedDate || '';
+        var dateStr = rawDate ? (function(d){ return (d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0')+'/'+d.getFullYear(); })(new Date(rawDate)) : 'E2014';
+        return {
+          addr:       addrLine,
+          area:       city + ', ' + state + (zip ? ' ' + zip : ''),
+          zip:        zip,
+          beds:       parseInt(l.bedrooms)      || parseInt(beds),
+          baths:      parseFloat(l.bathrooms)   || parseFloat(baths),
+          sqft:       parseInt(l.squareFootage) || 0,
+          rent:       parseInt(l.price)         || 0,
+          date:       dateStr,
+          similarity: l.correlation             || null,
+          distance:   l.distance                || null
+        };
+      }).filter(function(c) { return c.rent > 0; });
+
+      callback(true, data, liveComps);
+    })
+    .catch(function(err) {
+      console.error('Rentcast failed:', err);
+      rentcastRent = 0; rentcastLow = 0; rentcastHigh = 0;
+      liveComps = [];
+      callback(false, null, []);
+    });
+}
+
+// Fallback rent table if Rentcast estimate unavailable
+function getFallbackRent(beds, baths) {
+  var t = {
+    '1':{'1':1075,'1.5':1125},
+    '2':{'1':1375,'1.5':1450,'2':1600,'2.5':1650},
+    '3':{'2':1950,'2.5':2050,'3':2150},
+    '4':{'2':2350,'2.5':2500,'3':2650,'4':2900},
+    '5':{'3':3100,'4':3400}
+  };
+  var row = t[String(beds)] || t['3'];
+  return row[String(baths)] || row[Object.keys(row)[0]] || 1900;
+}
+
+/* ============================================================
+   GENERATE
+============================================================ */
+function generateProposal() {
+  // Validate API key first
+  var inp = gid('inp-apikey');
+  if (inp && inp.value.trim()) RENTCAST_KEY = inp.value.trim();
+  if (!RENTCAST_KEY) {
+    var msg = gid('key-msg');
+    msg.className = 'lookup-msg err';
+    msg.textContent = 'Please enter your Rentcast API key above before generating.';
+    msg.style.display = 'block';
+    gid('inp-apikey').focus();
+    return;
+  }
+  var btn = gid('btn-gen');
+  btn.classList.add('loading');
+  var address  = gid('inp-address').value.trim() || 'Boise, ID';
+  var beds     = gid('inp-beds').value;
+  var baths    = gid('inp-baths').value;
+  var sqft     = gid('inp-sqft').value || 0;
+  var propType = gid('inp-type').value;
+
+  fetchRentcastData(address, beds, baths, sqft, propType, function(ok, estData, comps) {
+    liveComps = comps;
+    btn.classList.remove('loading');
+    buildProposal();
+    openModal();
+  });
+}
+
+function buildProposal() {
+  var address  = gid('inp-address').value.trim() || 'Your Property';
+  var beds     = gid('inp-beds').value;
+  var baths    = gid('inp-baths').value;
+  var sqft     = parseInt(gid('inp-sqft').value) || 0;
+  var propType = gid('inp-type').value;
+  var mgmtPct  = parseFloat(gid('inp-mgmt').value) / 100;
+  var furnished = gid('tog-furn').classList.contains('on');
+  var typeMap = {sfh:'SFH',townhome:'TH',condo:'Condo',duplex:'Duplex',multi:'Multi'};
+  var typeLabel = typeMap[propType] || 'SFH';
+
+  // Use Rentcast AVM estimate if available, otherwise fall back to lookup table
+  var furnMult = furnished ? 1.20 : 1.0;
+  var conBase, optBase;
+  if (rentcastRent > 0) {
+    // Rentcast gives us low/high range directly
+    conBase = Math.round(rentcastLow / 50) * 50;
+    optBase = Math.round(rentcastHigh / 50) * 50;
+  } else {
+    var base = getFallbackRent(beds, baths);
+    conBase = Math.round(base * 0.95 / 50) * 50;
+    optBase = Math.round(base * 1.05 / 50) * 50;
+  }
+  var conFurn = Math.round(conBase * furnMult / 50) * 50;
+  var optFurn = Math.round(optBase * furnMult / 50) * 50;
+  var dispCon = furnished ? conFurn : conBase;
+  var dispOpt = furnished ? optFurn : optBase;
+
+  gid('out-addr').textContent = address.toUpperCase();
+  var furnNote = furnished ? ' (Furnished)' : '';
+  gid('out-demand').textContent = 'DEMAND IN THIS AREA FOR ' + beds + '-BED, ' + baths + '-BATH HOMES SUPPORTS A ' + fmt(dispCon) + '-' + fmt(dispOpt) + ' RANGE' + furnNote + '.';
+  if (furnished) { gid('out-furn-badge').classList.add('show'); } else { gid('out-furn-badge').classList.remove('show'); }
+  gid('out-mgmt-th').textContent = (mgmtPct * 100).toFixed(0) + '% MGMT Fee';
+
+  function makeRow(label, rent, isFurn) {
+    var ann = rent * 12;
+    var fee = ann * mgmtPct;
+    var net = ann - fee;
+    var cls = isFurn ? ' class="furn-tr"' : '';
+    return '<tr' + cls + '><td>' + label + '</td><td>' + fmt(rent) + '</td><td>' + fmt(ann) + '</td><td>' + fmt(fee) + '</td><td>' + fmt(net) + '</td></tr>';
+  }
+  var projHTML = makeRow('Conservative', conBase, false) + makeRow('Optimistic', optBase, false);
+  if (furnished) {
+    projHTML += makeRow('Conservative (Furnished)', conFurn, true);
+    projHTML += makeRow('Optimistic (Furnished)', optFurn, true);
+  }
+  gid('out-proj').innerHTML = projHTML;
+
+  // Expenses
+  var mortMo = 0, taxMo = 0, insMo = 0, hoaMo = 0;
+  if (gid('tog-mort').classList.contains('on')) {
+    var pp = parseFloat(gid('inp-pprice').value) || 0;
+    var dp = parseFloat(gid('inp-down').value) || 20;
+    var ir = parseFloat(gid('inp-rate').value) || 7;
+    var lt = parseInt(gid('inp-term').value) || 30;
+    if (pp > 0) mortMo = calcMort(pp, dp, ir, lt);
+  }
+  if (gid('tog-tax').classList.contains('on')) taxMo = (parseFloat(gid('inp-tax').value) || 0) / 12;
+  if (gid('tog-ins').classList.contains('on')) insMo = (parseFloat(gid('inp-ins').value) || 0) / 12;
+  if (gid('tog-hoa').classList.contains('on')) {
+    var hoaAmt = parseFloat(gid('inp-hoa').value) || 0;
+    var hoaFreq = parseInt(gid('inp-hoafreq').value) || 12;
+    hoaMo = hoaAmt * hoaFreq / 12;
+  }
+  var exWrap = gid('out-expenses');
+  if (mortMo || taxMo || insMo || hoaMo) {
+    var avgRent = (dispCon + dispOpt) / 2;
+    var mgmtMo = avgRent * mgmtPct;
+    var cf = avgRent - mortMo - taxMo - insMo - hoaMo - mgmtMo;
+    var exItems = [];
+    if (mortMo) exItems.push({l:'Mortgage P&I', v:-mortMo});
+    if (taxMo)  exItems.push({l:'Prop. Tax', v:-taxMo});
+    if (insMo)  exItems.push({l:'Insurance', v:-insMo});
+    if (hoaMo)  exItems.push({l:'HOA', v:-hoaMo});
+    exItems.push({l:'Mgmt (' + (mgmtPct*100).toFixed(0) + '%)', v:-mgmtMo});
+    exItems.push({l:'Est. Cash Flow', v:cf, pos: cf >= 0});
+    var exHTML = '<div style="margin-top:.75rem;"><div style="font-family:Julius Sans One,sans-serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.4rem;">Monthly Expense Breakdown</div><div class="expense-strip">';
+    for (var ei = 0; ei < exItems.length; ei++) {
+      var item = exItems[ei];
+      var sign = item.v >= 0 ? '+' : '-';
+      var vcls = item.pos ? 'ex-val pos' : 'ex-val';
+      exHTML += '<div class="ex-item"><div class="ex-lbl">' + item.l + '</div><div class="' + vcls + '">' + sign + fmt(Math.abs(item.v)) + '</div></div>';
+    }
+    exHTML += '</div></div>';
+    exWrap.innerHTML = exHTML;
+  } else { exWrap.innerHTML = ''; }
+
+  // Unit box
+  var addrShort = address.split(',')[0] || address;
+  var rentDisplay = furnished ? (fmt(conFurn) + '-' + fmt(optFurn) + ' (furn.)') : (fmt(conBase) + '-' + fmt(optBase));
+  gid('out-unit-addr').textContent = addrShort;
+  gid('out-u-beds').textContent = beds;
+  gid('out-u-baths').textContent = baths;
+  gid('out-u-sqft').textContent = sqft ? sqft.toLocaleString() : '-';
+  gid('out-u-type').textContent = typeLabel;
+  gid('out-u-rent').textContent = rentDisplay + '/mo';
+  if (furnished) { gid('out-u-furn').classList.add('show'); } else { gid('out-u-furn').classList.remove('show'); }
+
+  var zip = detectedZip || extractZip(address) || '';
+  gid('out-comp-sub').textContent = 'Comparable rentals within 2 miles, last 270 days (via Rentcast AVM)';
+
+  var comps = liveComps;
+  var midRent = (dispCon + dispOpt) / 2;
+
+  if (comps.length === 0) {
+    gid('out-comps').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);font-size:.85rem;">No comps returned. Check console (F12) for API error details.</td></tr>';
+    gid('out-bars').innerHTML = '';
+    gid('out-bar-lbls').innerHTML = '';
+  } else {
+    var compHTML = '';
+    for (var ci = 0; ci < comps.length; ci++) {
+      var c = comps[ci];
+      // Use Rentcast similarity score directly (0-1 float -> percentage), fall back to calculated
+      var simPct = c.similarity ? Math.round(c.similarity * 100) : (function(){
+        var s = 100;
+        if (c.beds !== parseInt(beds)) s -= 15;
+        if (parseFloat(c.baths) !== parseFloat(baths)) s -= 8;
+        if (sqft && c.sqft) { var dd = Math.abs(c.sqft - sqft) / sqft; s -= Math.round(dd * 30); }
+        return Math.max(60, Math.min(99, s));
+      })();
+      var diff = c.rent - midRent;
+      var dHtml = diff >= 0 ? '<span class="up">+$' + Math.abs(Math.round(diff)) + '</span>' : '<span class="dn">-$' + Math.abs(Math.round(diff)) + '</span>';
+      var simCls = simPct >= 90 ? 'sim' : 'sim med';
+      var distStr = c.distance ? (Math.round(c.distance * 10)/10) + ' mi' : '-';
+      compHTML += '<tr><td><span class="' + simCls + '">' + simPct + '%</span></td>';
+      compHTML += '<td style="font-weight:600;white-space:nowrap;">' + c.addr + '<br><span style="font-weight:400;font-size:.72rem;color:var(--text-muted);">' + c.area + '</span></td>';
+      compHTML += '<td>' + c.beds + '</td><td>' + c.baths + '</td><td>' + (c.sqft ? c.sqft.toLocaleString() : '-') + '</td>';
+      compHTML += '<td>' + distStr + '</td><td>' + c.date + '</td>';
+      compHTML += '<td><strong>' + fmt(c.rent) + '</strong> ' + dHtml + '</td></tr>';
+    }
+    gid('out-comps').innerHTML = compHTML;
+
+    var compRents = comps.map(function(c) { return c.rent; });
+    var yourMid = (dispCon + dispOpt) / 2;
+    var allRents = compRents.concat([yourMid]).sort(function(a,b){return a-b;});
+    var minR = allRents[0], maxR = allRents[allRents.length-1];
+    var rawStep = (maxR - minR) / 5;
+    var step = Math.max(50, Math.round(rawStep / 50) * 50);
+    var buckets = [];
+    for (var r = minR - step; r <= maxR + step; r += step) buckets.push(r);
+    var counts = buckets.map(function(bk) {
+      return compRents.filter(function(rv) { return rv >= bk && rv < bk + step; }).length;
+    });
+    var isYours = buckets.map(function(bk) { return yourMid >= bk && yourMid < bk + step; });
+    var maxCnt = Math.max.apply(null, counts.concat([1]));
+    var barsH = '', lblsH = '';
+    for (var bi = 0; bi < buckets.length; bi++) {
+      var h = Math.max(4, Math.round((counts[bi] / maxCnt) * 85));
+      var y = isYours[bi];
+      var rcls = y ? (furnished ? 'bar-rect furn-bar' : 'bar-rect yours') : (counts[bi] > 0 ? 'bar-rect active' : 'bar-rect empty');
+      var barH = y ? 88 : h;
+      barsH += '<div class="bar-col"><div class="' + rcls + '" style="height:' + barH + 'px;"></div></div>';
+      lblsH += '<div class="bar-lbl">$' + (buckets[bi]/1000).toFixed(1) + 'k</div>';
+    }
+    var sortedRents = compRents.slice().sort(function(a,b){return a-b;});
+    var medL = sortedRents[Math.floor((sortedRents.length-1)/2)] || conBase;
+    var medH = sortedRents[Math.ceil((sortedRents.length-1)/2)] || optBase;
+    gid('out-bars').innerHTML = barsH + '<div class="median-tag"><div class="ml">Median</div><div class="mv">' + fmt(medL) + '-' + fmt(medH) + '</div></div>';
+    gid('out-bar-lbls').innerHTML = lblsH;
+    gid('out-axis-lo').textContent = fmt(minR) + ' Low';
+    gid('out-axis-hi').textContent = fmt(maxR) + ' High';
+  }
+}
+</script>
+</body>
+</html>
